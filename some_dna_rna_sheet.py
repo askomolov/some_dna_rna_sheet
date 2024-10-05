@@ -5,11 +5,8 @@ import modules.filter_fastq_func as fifa
 def run_dna_rna_tools(*args):
     *seqs, proc = args
     new_seqs = []
-    if len(seqs) == 0:
-        return print('No sequence in input')
-    for i in seqs:
-        if drt.is_dna(i) is False and drt.is_rna(i) is False:
-            return (print('One sequence is not DNA or RNA'))
+    if drt.input_check(seqs) == 0:
+        return None
     for i in range(0, len(seqs)):
         if proc == 'transcribe':
             if drt.is_dna(seqs[i]) is False:

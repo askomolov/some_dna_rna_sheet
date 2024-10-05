@@ -2,6 +2,17 @@ DNA = ('A', 'T', 'G', 'C', 'a', 't', 'g', 'c')
 RNA = ('A', 'U', 'G', 'C', 'a', 'u', 'g', 'c')
 
 
+def input_check(seqs):
+    if len(seqs) == 0:
+        print('No sequence in input')
+        return 0
+    for i in seqs:
+        if is_dna(i) is False and is_rna(i) is False:
+            print('One sequence is not DNA or RNA')
+            return 0
+    return 1
+
+
 def transcribe(seq):
     new_seq = seq.replace('T', 'U')
     new_seq = new_seq.replace('t', 'u')
