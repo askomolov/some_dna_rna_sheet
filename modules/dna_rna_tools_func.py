@@ -44,9 +44,9 @@ def reverse_complement(seq):
     return new_seq
 
 
-def is_DNA(seq):
+def is_dna(seq):
     return set(seq).issubset(DNA)
 
 
-def is_RNA(seq):
+def is_rna(seq):
     return set(seq).issubset(RNA)

@@ -8,11 +8,11 @@ def run_dna_rna_tools(*args):
     if len(seqs) == 0:
         return print('No sequence in input')
     for i in seqs:
-        if drt.is_DNA(i) is False and drt.is_RNA(i) is False:
+        if drt.is_dna(i) is False and drt.is_rna(i) is False:
             return (print('One sequence is not DNA or RNA'))
     for i in range(0, len(seqs)):
         if proc == 'transcribe':
-            if drt.is_DNA(seqs[i]) is False:
+            if drt.is_dna(seqs[i]) is False:
                 return print(' Couldn\'t transcribe RNA')
             new_seqs.append(drt.transcribe(seqs[i]))
         elif proc == 'reverse':
