@@ -1,5 +1,6 @@
 import modules.dna_rna_tools_func as drt
 import modules.filter_fastq_func as fifa
+import os
 
 
 def run_dna_rna_tools(*args):
@@ -16,11 +17,11 @@ def run_dna_rna_tools(*args):
     """
     *seqs, proc = args
     new_seqs = []
-    if drt.input_check(seqs) is False:
+    if not drt.input_check(seqs):
         return None
     for i in range(0, len(seqs)):
         if proc == 'transcribe':
-            if drt.is_dna(seqs[i]) is False:
+            if not drt.is_dna(seqs[i]):
                 return print(' Couldn\'t transcribe RNA')
             new_seqs.append(drt.transcribe(seqs[i]))
         elif proc == 'reverse':
@@ -37,11 +38,20 @@ def run_dna_rna_tools(*args):
         return new_seqs
 
 
-def filter_fastq(seqs: dict, **kwargs) -> dict:
+def filter_fastq(input_fastq: str, output_fastq: str, **kwargs) -> None:
     """
-    Filter input reads.
+    Filter input fastq files.
     Parameters for filtration could be specified (default): gc_bounds (0,100), length_bounds(0, 2**32), quality_threshold (0).
+    Work with fullpath to the input_fastq or if its in working directory.
+    Write filtrated reads to ./filtered/output_fastq
     """
-    params = fifa.check_params(**kwargs)  # Записывыем все параметры фильтраций (введенные или по умолчанию) в один словарь
-    act_seqs = fifa.seqs_choose(seqs, params)  # Выбор последовательностей, подходящих по параметрам
-    return act_seqs
+    params = fifa.process_params(**kwargs)
+    seqs = fifa.fetch_seqs_from_file(input_fastq)
+    act_seqs = fifa.seqs_choose(seqs, params)
+    output_path = os.path.join('filtered', output_fastq)
+    if os.path.isdir('filtered'):
+        fifa.write_seqs_to_file(act_seqs, output_path)
+    else:
+        os.mkdir('filtered')
+        fifa.write_seqs_to_file(act_seqs, output_path)
+    return None

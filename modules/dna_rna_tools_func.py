@@ -8,7 +8,7 @@ def input_check(seqs) -> bool:
         print('No sequence in input')
         return False
     for i in seqs:
-        if is_dna(i) is False and is_rna(i) is False:
+        if not is_dna(i) and not is_rna(i):
             print('One sequence is not DNA or RNA')
             return False
         elif len(i) == 0:
