@@ -1,42 +1,61 @@
 # Some DNA RNA sheet 
-**Some DNA RNA sheet** - библиотека на языке Python предназначенная для работы с последовательностями ДНК и РНК, а также с РИДами в формате **FASTQ**.
+**Some DNA RNA sheet** - python library, developed to work with DNA and RNA sequences, READs from **.fastq**, sequences from **.fasta** and parse Blast output.
 
-## Установка библиотеки
-Чтобы установить данную библиотеку на компьютер Вы можете: 
+## Library installation
+To install this library on your computer you can: 
 
-1. Скачать данный репозиторий к себе на комьютер с помощью команды `git clone <ссылка>`.
+1. Download this repository to your computer using the following command `git clone <link>`.
 
-2. Скачать вручную основной скрипт **some_dna_rna_sheet.py** и папку **modules**.
+2. Download main scripts manually **some_dna_rna_sheet.py**, **bio_files_processor.py** and the folder **modules**.
 
-В обоих случаях репозиторий или скрипт с папкой должны находиться в рабочей директории.
+In both cases, the repository or scripts must be in the working directory.
 
 
-## Основной функционал
+## Main functionality
 
-Библиотека может:
+This library can:
 
-1. Работать с ДНК и РНК (транскрипция ДНК, построение комплементарной ДНК последовательности, построение обратной последовательности, построение обратной комплементарной ДНК последовательности).
+1. Work with DNA and RNA (DNA transcription, make complementary DNA sequence, make reverse sequence, make reverse complementary DNA sequence). Script <u>some_dna_rna_sheet.py</u>
 
-Использование:
+Usage:
 ```python
 import some_dna_rna_sheet
 
-some_dna_rna_sheet.dna_rna_tools(<последовательности>, <операция>)
+some_dna_rna_sheet.dna_rna_tools(<Sequences>, <action>)
 ```
-Последовательности задаются в формате строки или списка из строк. Регистр не важен. Операция задается в виде строки ('transcribe', 'reverse','complement','reverse_complement')
+Sequences are specified in the format of a string or a list of strings. The case is not important. An action is specified with one of the strings: 'transcribe', 'reverse','complement','reverse_complement'.
 
-2. Фильтровать РИДы в формате **FASTQ** на основе введенных параметров или заданнных по умолчанию.
+2. Filter READs from a file in the following format **.fastq** based on input parameters or set by default. Script <u>some_dna_rna_sheet.py</u>
 
+Usage:
 ```python
 import some_dna_rna_sheet
 
-some_dna_rna_sheet.filter_fastq(<РИДы>, <Параметры>)
+some_dna_rna_sheet.filter_fastq(input_fastq = <name_of_input_file.fastq>, output_fastq = <name_of_output_file.fastq>,  <Options>)
 ```
-На вход программе подаются РИДы: словарь, состоящий из fastq-сиквенсов. Структура следующая. Ключ - строка, имя последовательности. Значение - кортеж из двух строк: последовательность и качество.
+The input is a file in the format **<name_of_input_file>.fastq**. You can also specify the name of the output file. By default: **<name_of_input_file>_output.fastq**. The output file is saved in the folder **./filtered**
 
-Параметры: `gc_bounds` - рамки фильтрации по GC составу (по-умолчанию (0, 100)); `length_bounds` - интервал длины для фильтрации (по-умолчанию равен (0, 2**32)); `quality_threshold` - пороговое значение среднего качества рида для фильтрации, по-умолчанию равно 0 (шкала phred33).
+Options: `gc_bounds` - GC filtration range (by default (0, 100)); `length_bounds` - length filtration range (by default (0, 2**32)); `quality_threshold` - threshold value of average READ quality for filtration, by default 0 (scale - phred33).
 
-Более подробную информацию о функциях можно получить при вызове справки с помощью комманды `help()`
+3. Convert  multiline **.fasta** into oneline. Script <u>bio_files_processor.py</u>
+
+Usage:
+```python
+import bio_files_processor
+
+bio_files_processor.convert_multiline_fasta_to_oneline(input_fasta = <name_of_input_file.fasta>, output_fasta = <name_of_output_file.fasta>)
+```
+
+4. Parse blast output and returns the descriptions of proteins for each Query. Script <u>bio_files_processor.py</u>
+
+Usage:
+```python
+import bio_files_processor
+
+bio_files_processor.parse_blast_output(input_file = <name_of_input_file.txt>, output_file = <name_of_output_file.txt>)
+```
+
+More detailed information about the functions can be obtained by calling the help with the command `help()`
 
 ```python
 import some_dna_rna_sheet
@@ -45,7 +64,7 @@ help(some_dna_rna_sheet)
 ```
 
 
-## Контакты
-Данная библиотека была разработана в рамках [домашнего задания №4](https://github.com/Python-BI-2024-25/course_materials/tree/main/Homeworks/HW4_Modules) по Python студентом [Института Биоинформатики](https://bioinf.me) 2024/25 года обучения - Комоловым Александром.
+## Contacts
+This library was developed as part of the [homework №4](https://github.com/Python-BI-2024-25/course_materials/tree/main/Homeworks/HW4_Modules) and [homework №5](https://github.com/Python-BI-2024-25/course_materials/tree/main/Homeworks/HW5_Files)  by student of [Bioinformatics Institute](https://bioinf.me) 2024/25 year - Komolov Aleksandr.
 
-По всем вопросам можно обращаться на почту: askomolov@mail.ru
+If you have any questions, please contact us at: askomolov@mail.ru
