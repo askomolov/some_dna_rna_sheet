@@ -1,41 +1,156 @@
-import modules.dna_rna_tools_func as drt
-import modules.filter_fastq_func as fifa
+import numpy as np
+from Bio import SeqIO
+from Bio.SeqUtils import GC
+import statistics
 import os
 
 
-def run_dna_rna_tools(*args):
+class WrongSequenceTypeError(TypeError):
     """
-    Script wth some tools for DNA and RNA sequences
-    Input: One or more DNA or RNA sequences and one action from the list: transcribe, reverse, complement, reverse_complement
-    If no DNA or RNA sequences or not nucleotide sequence in input return None.
-    If action is:
-    1) transcribe - function transcibe all DNA sequence. If RNA in input return None.
-    2) reverse - function reverse nucleotide sequence.
-    3) complement - function make complementary DNA sequence.
-    4) reverse_complement - function make reverse complementary DNA sequence.
-    5) else - function return None.
+    For all classes.
     """
-    *seqs, proc = args
-    new_seqs = []
-    if not drt.input_check(seqs):
-        return None
-    for i in range(0, len(seqs)):
-        if proc == 'transcribe':
-            if not drt.is_dna(seqs[i]):
-                return print(' Couldn\'t transcribe RNA')
-            new_seqs.append(drt.transcribe(seqs[i]))
-        elif proc == 'reverse':
-            new_seqs.append(drt.reverse(seqs[i]))
-        elif proc == 'complement':
-            new_seqs.append(drt.complement(seqs[i]))
-        elif proc == 'reverse_complement':
-            new_seqs.append(drt.reverse_complement(seqs[i]))
+    pass
+
+
+class ProteingEncodingError(TypeError):
+    """
+    For class Protein.
+    """
+    pass
+
+
+class BiologicalSequence():
+    dna = ('A', 'T', 'G', 'C')
+    rna = ('A', 'U', 'G', 'C')
+    aa_list = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
+
+    def __init__(self, seq):
+        self.seq = seq.upper()
+        self.len_seq = len(seq)
+        if self._is_seq() is False:
+            raise WrongSequenceTypeError('This is not a biological sequence (DNA, RNA or protein)')
+
+    def __len__(self):
+        return self.len_seq
+
+    def __str__(self):
+        if self.len_seq > 75:
+            seq_for_repr = self.seq[0:35] + '...' + self.seq[self.len_seq-35:self.len_seq]
         else:
-            return print('Unknown procedure')
-    if len(seqs) == 1:
-        return new_seqs[0]
-    else:
-        return new_seqs
+            seq_for_repr = self.seq
+        return f' {self.type} sequence: {seq_for_repr} with the len of {str(self.len_seq)}\n If you need full sequence refer to .seq attribute'
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __getitem__(self, slc):
+        if isinstance(slc, int):
+            return self.seq[slc]
+        elif isinstance(slc, slice):
+            return self.seq[slc]
+
+    def _is_seq(self):
+        if set(self.seq).issubset(self.dna):
+            self.type = 'DNA'
+            return True
+        elif set(self.seq).issubset(self.rna):
+            self.type = 'RNA'
+            return True
+        elif set(self.seq).issubset(self.aa_list):
+            self.type = 'Protein'
+            return True
+        else:
+            return False
+
+
+class NucleicAcidSequence(BiologicalSequence):
+
+    def __init__(self, seq):
+        super().__init__(seq)
+        if self.type == 'Protein':
+            raise WrongSequenceTypeError('This is not a  nucleic acid sequence')
+
+    def reverse(self):
+        "Reverse nucleotide sequence"
+        if self.type == "DNA":
+            return DNASequence(self.seq[::-1])
+        else:
+            return RNASequence(self.seq[::-1])
+
+    def complement(self):
+        "Make complementary DNA sequence"
+        new_seq = ''
+        for i in self.seq:
+            if i == 'A':
+                new_seq = new_seq + 'T'
+            elif i == 'T':
+                new_seq = new_seq + 'A'
+            elif i == 'C':
+                new_seq = new_seq + 'G'
+            elif i == 'G':
+                new_seq = new_seq + 'C'
+            elif i == 'U':
+                new_seq = new_seq + 'A'
+        return DNASequence(new_seq)
+
+    def reverse_complement(self):
+        "Make reverse complementary DNA sequence"
+        rev = self.reverse()
+        return rev.complement()
+
+
+class DNASequence(NucleicAcidSequence):
+    def __init__(self, seq):
+        super().__init__(seq)
+        if self.type == 'RNA':
+            raise WrongSequenceTypeError('This is not a DNA')
+
+    def transcribe(self):
+        "Transcibe DNA sequence"
+        return RNASequence(self.seq.replace('T', 'U'))
+
+
+class RNASequence(NucleicAcidSequence):
+    def __init__(self, seq):
+        super().__init__(seq)
+        if set(self.seq).issubset(self.rna):  # This part written because by default we consider sequence as dna
+            self.type = 'RNA'
+        else:
+            raise WrongSequenceTypeError('This is not a RNA')
+
+
+class AminoAcidSequence(BiologicalSequence):
+    def __init__(self, seq):
+        super().__init__(seq)
+        if set(self.seq).issubset(self.aa_list):  # This part written because by default we consider sequence as dna
+            self.type = 'Protein'
+        else:
+            raise WrongSequenceTypeError('This is not a Protein')
+
+    def one_hot_code(self):
+        """
+        Return 2d np.array(np.float32): peptide in one-hot representation.
+        """
+        self.prot_oh_encoded = np.zeros((len(self.aa_list), self.len_seq), dtype=np.float32)
+
+        for i in range(self.len_seq):
+            for j in range(len(self.aa_list)):
+                if self.aa_list[j] == self.seq[i]:
+                    self.prot_oh_encoded[j][i] = 1
+        return self.prot_oh_encoded
+
+    def one_hot_decode(self):
+        """
+        Only working with 2d np.array(np.float32)
+        """
+        ans = ''
+        if self.prot_oh_encoded is None:
+            raise ProteingEncodingError('Protein have not coded yet. Processed it with Protein(sequrnce).one_hot_code()')
+        for i in range(self.prot_oh_encoded.shape[1]):
+            for j in range(len(self.aa_list)):
+                if self.prot_oh_encoded[j][i] == 1:
+                    ans += self.aa_list[j]
+        return ans
 
 
 def filter_fastq(input_fastq: str, output_fastq: str, **kwargs) -> None:
@@ -45,13 +160,50 @@ def filter_fastq(input_fastq: str, output_fastq: str, **kwargs) -> None:
     Work with fullpath to the input_fastq or if its in working directory.
     Write filtrated reads to ./filtered/output_fastq
     """
-    params = fifa.process_params(**kwargs)
-    seqs = fifa.fetch_seqs_from_file(input_fastq)
-    act_seqs = fifa.seqs_choose(seqs, params)
+    params = process_params(**kwargs)
+    good_reads = (
+        rec
+        for rec in SeqIO.parse(input_fastq, "fastq")
+        if (
+            statistics.mean(rec.letter_annotations["phred_quality"]) >= params['quality_threshold'] and
+            len(rec) > params['length_bounds'][0] and len(rec) < params['length_bounds'][1] and
+            GC(rec.seq) > params['gc_bounds'][0] and GC(rec.seq) < params['gc_bounds'][1]
+        )
+    )
     output_path = os.path.join('filtered', output_fastq)
     if os.path.isdir('filtered'):
-        fifa.write_seqs_to_file(act_seqs, output_path)
+        SeqIO.write(good_reads, output_path, "fastq")
     else:
         os.mkdir('filtered')
-        fifa.write_seqs_to_file(act_seqs, output_path)
+        SeqIO.write(good_reads, output_path, "fastq")
     return None
+
+
+def process_params(**kwargs) -> dict:
+    "Set parameters for selection (default): gc_bounds (0,100), length_bounds(0, 2**32), quality_threshold (0)"
+    gc_b = kwargs.get('gc_bounds')
+    params = {}
+    if gc_b is None:
+        gc_b_low = 0
+        gc_b_high = 100
+    elif isinstance(gc_b, tuple):
+        gc_b_low = gc_b[0]
+        gc_b_high = gc_b[1]
+    else:
+        gc_b_low = 0
+        gc_b_high = gc_b
+    lenght_b = kwargs.get('length_bounds')
+    if lenght_b is None:
+        lenght_b_low = 0
+        lenght_b_high = 2**32
+    elif isinstance(lenght_b, tuple):
+        lenght_b_low = lenght_b[0]
+        lenght_b_high = lenght_b[1]
+    else:
+        lenght_b_low = 0
+        lenght_b_high = lenght_b
+    quality_t = kwargs.get('quality_threshold')
+    if quality_t is None:
+        quality_t = 0
+    params = {'gc_bounds': (gc_b_low, gc_b_high), 'length_bounds': (lenght_b_low, lenght_b_high), 'quality_threshold': quality_t}
+    return params
