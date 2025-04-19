@@ -3,6 +3,7 @@ from Bio import SeqIO
 from Bio.SeqUtils import GC
 import statistics
 import os
+import argparse
 
 
 class WrongSequenceTypeError(TypeError):
@@ -176,7 +177,6 @@ def filter_fastq(input_fastq: str, output_fastq: str, **kwargs) -> None:
     else:
         os.mkdir('filtered')
         SeqIO.write(good_reads, output_path, "fastq")
-    return None
 
 
 def process_params(**kwargs) -> dict:
@@ -207,3 +207,46 @@ def process_params(**kwargs) -> dict:
         quality_t = 0
     params = {'gc_bounds': (gc_b_low, gc_b_high), 'length_bounds': (lenght_b_low, lenght_b_high), 'quality_threshold': quality_t}
     return params
+
+
+
+
+parser = argparse.ArgumentParser(
+                    prog='Some_dna_rna_sheet fastq filtrator',
+                    description='This tool filter input fastq file. Parameters for filtration could be specified (default): gc_bounds (0,100), length_bounds(0, 2**32), quality_threshold (0). Work with fullpath to the input_fastq or if its in working directory. Write filtrated reads to ./filtered/output_fastq',
+                    epilog='Have a good time!')
+
+parser.add_argument('input_fastq', type=str, help='Input fastq  file.')
+parser.add_argument('output_fastq', type=str, help='Name of output file')
+parser.add_argument('-l', '--lenght', type=int, nargs='+', help='Length bounds for keeping sequence')
+parser.add_argument('-g', '--gcbounds', type=int, nargs='+', help='GC content(%) bounds for keeping sequence')
+parser.add_argument('-q', '--quality',type=int, help='Quality threshold for keeping sequence')
+
+
+if __name__ == '__main__':
+    # Parse arguments
+    args = parser.parse_args()
+
+    # Process lenght bound argument
+    if args.lenght is not None:
+        if len(args.lenght) == 1:
+            args_length_bounds = args.lenght[0]
+        elif len(args.lenght) == 2:
+            args_length_bounds = tuple(args.lenght)
+        else:
+            raise ValueError('Too many arguments for length bounds')
+    else:
+        args_length_bounds = None
+
+    # Process GC content bound argument
+    if args.gcbounds is not None:
+        if len(args.gcbounds) == 1:
+            args_gcbounds = args.gcbounds[0]
+        elif len(args.gcbounds) == 2:
+            args_gcbounds = tuple(args.gcbounds)
+        else:
+            raise ValueError('Too many arguments for GC content bounds')
+    else:
+        args_gcbounds = None
+
+    filter_fastq(input_fastq=args.input_fastq, output_fastq=args.output_fastq, gc_bounds=args_gcbounds, length_bounds=args_length_bounds, quality_threshold=args.quality)
