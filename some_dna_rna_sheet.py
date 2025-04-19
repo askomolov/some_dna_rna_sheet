@@ -213,13 +213,13 @@ def process_params(**kwargs) -> dict:
 
 parser = argparse.ArgumentParser(
                     prog='Some_dna_rna_sheet fastq filtrator',
-                    description='This tool filter input fastq file. Parameters for filtration could be specified (default): gc_bounds (0,100), length_bounds(0, 2**32), quality_threshold (0). Work with fullpath to the input_fastq or if its in working directory. Write filtrated reads to ./filtered/output_fastq',
+                    description='This tool filter input fastq file.\nParameters for filtration could be specified by default:\ngc_bounds 0 100,\nlength_bounds 0 2**32,\nquality_threshold 0. Work with fullpath to the input_fastq or if its in working directory. Write filtrated reads to ./filtered/output_fastq',
                     epilog='Have a good time!')
 
 parser.add_argument('input_fastq', type=str, help='Input fastq  file.')
 parser.add_argument('output_fastq', type=str, help='Name of output file')
 parser.add_argument('-l', '--lenght', type=int, nargs='+', help='Length bounds for keeping sequence')
-parser.add_argument('-g', '--gcbounds', type=int, nargs='+', help='GC content(%) bounds for keeping sequence')
+parser.add_argument('-g', '--gcbounds', type=int, nargs='+', help='GC content bounds for keeping sequence')
 parser.add_argument('-q', '--quality',type=int, help='Quality threshold for keeping sequence')
 
 
