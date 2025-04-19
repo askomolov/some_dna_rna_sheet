@@ -4,6 +4,7 @@ from Bio.SeqUtils import GC
 import statistics
 import os
 import argparse
+import logging
 
 
 class WrongSequenceTypeError(TypeError):
@@ -162,7 +163,7 @@ def filter_fastq(input_fastq: str, output_fastq: str, **kwargs) -> None:
     Write filtrated reads to ./filtered/output_fastq
     """
     params = process_params(**kwargs)
-    good_reads = (
+    good_reads = [
         rec
         for rec in SeqIO.parse(input_fastq, "fastq")
         if (
@@ -170,13 +171,18 @@ def filter_fastq(input_fastq: str, output_fastq: str, **kwargs) -> None:
             len(rec) > params['length_bounds'][0] and len(rec) < params['length_bounds'][1] and
             GC(rec.seq) > params['gc_bounds'][0] and GC(rec.seq) < params['gc_bounds'][1]
         )
-    )
-    output_path = os.path.join('filtered', output_fastq)
-    if os.path.isdir('filtered'):
-        SeqIO.write(good_reads, output_path, "fastq")
+    ]
+
+    if len(good_reads) == 0:
+        logging.error("No reads in output!")  # Error log
     else:
-        os.mkdir('filtered')
-        SeqIO.write(good_reads, output_path, "fastq")
+        logging.info(f"Number of filtrated reads - {len(good_reads)}")  # Info log
+        output_path = os.path.join('filtered', output_fastq)
+        if os.path.isdir('filtered'):
+            SeqIO.write(good_reads, output_path, "fastq")
+        else:
+            os.mkdir('filtered')
+            SeqIO.write(good_reads, output_path, "fastq")
 
 
 def process_params(**kwargs) -> dict:
@@ -209,8 +215,7 @@ def process_params(**kwargs) -> dict:
     return params
 
 
-
-
+# Argument parsing
 parser = argparse.ArgumentParser(
                     prog='Some_dna_rna_sheet fastq filtrator',
                     description='This tool filter input fastq file.\nParameters for filtration could be specified by default:\ngc_bounds 0 100,\nlength_bounds 0 2**32,\nquality_threshold 0. Work with fullpath to the input_fastq or if its in working directory. Write filtrated reads to ./filtered/output_fastq',
@@ -220,7 +225,19 @@ parser.add_argument('input_fastq', type=str, help='Input fastq  file.')
 parser.add_argument('output_fastq', type=str, help='Name of output file')
 parser.add_argument('-l', '--lenght', type=int, nargs='+', help='Length bounds for keeping sequence')
 parser.add_argument('-g', '--gcbounds', type=int, nargs='+', help='GC content bounds for keeping sequence')
-parser.add_argument('-q', '--quality',type=int, help='Quality threshold for keeping sequence')
+parser.add_argument('-q', '--quality', type=int, help='Quality threshold for keeping sequence')
+
+
+# Logging setup
+logging.basicConfig(
+    filename="logs.log",
+    filemode="w",
+    style="{",
+    format="{levelname} !  {asctime} : {message}",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=logging.DEBUG,
+    force=True
+)
 
 
 if __name__ == '__main__':
