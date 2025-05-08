@@ -31,10 +31,15 @@ import some_dna_rna_sheet
 
 some_dna_rna_sheet.filter_fastq(input_fastq, output_fastq,  **kwargs)
 ```
-The input is a file in the format **<name_of_input_file>.fastq**. You should also specify the name of the output file. The output file is saved in the folder **./filtered**
+The input is a file in the format **<name_of_input_file>.fastq**. You should also specify the name of the output file. The output file is saved in the folder **./filtered** It also creates `log.log` file with useful information.
 
 \**kwargs: `gc_bounds` - GC filtration range (by default (0, 100)); `length_bounds` - length filtration range (by default (0, 2**32)); `quality_threshold` - threshold value of average READ quality for filtration, by default 0 (scale - phred33).
 
+
+`some_dna_rna_sheet.filter_fastq` also works from command line. Just do the following:
+```bash
+python some_dna_rna_sheet.py -h
+```
 
 2. Convert  multiline **.fasta** into oneline. Script <u>bio_files_processor.py</u>
 
@@ -79,8 +84,13 @@ List of packages contains some to work with jupyter lab.
 To make new kernel use:
 `ipython kernel install --user --name=<any_name_for_kernel>`
 
-*This library was tested on MacBook Pro (M1).*
+There is a script for `pytest` to test the correct performance.
+Run it with:
+```bash
+pytest
+```
 
+*This library was tested on MacBook Pro (M1).*
 
 
 ## Contacts
